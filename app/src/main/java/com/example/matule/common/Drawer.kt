@@ -42,6 +42,7 @@ fun Drawer(
     scope: CoroutineScope,
     preferencesManager: PreferencesManager,
     profileViewModel: ProfileViewModel,
+    avatarReloadKey: String = "",
     onClose: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -65,7 +66,7 @@ fun Drawer(
                 )
             } else {
                 AsyncImage(
-                    model = BASE_URL + profile.avatar,
+                    model = BASE_URL + profile.avatar + "?avatarReloadKey=$avatarReloadKey",
                     contentDescription = "Фото профиля",
                     modifier = Modifier
                         .clip(shape = RoundedCornerShape(50))

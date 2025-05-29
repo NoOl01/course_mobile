@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.matule.data.PreferencesManager
 import com.example.matule.domain.RetrofitInstance
+import com.example.matule.domain.models.requests.UpdateProfile
 import com.example.matule.domain.models.responses.ErrorResult
 import com.example.matule.domain.models.responses.ProfileInfoResult
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -68,6 +69,24 @@ class ProfileViewModel : ViewModel() {
             }
         } catch (ex: Exception) {
             ErrorResult(ex.message!!)
+        }
+    }
+
+    suspend fun updateProfile(
+        preferencesManager: PreferencesManager,
+        firstName: String,
+        lastName: String,
+        address: String,
+        email: String
+    ) {
+        try {
+            val token = preferencesManager.getAuthData()
+            if (token != null) {
+                val request = UpdateProfile(firstName, lastName, address, email)
+                _profile.value = RetrofitInstance.apiService.updateProfile("Bearer ${token.accessToken}", request)
+            }
+        } catch (ex: Exception) {
+            _profile.value = ProfileInfoResult(ex.message, null)
         }
     }
 }

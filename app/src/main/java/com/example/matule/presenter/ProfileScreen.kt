@@ -60,6 +60,7 @@ import com.example.matule.ui.theme.block
 import com.example.matule.ui.theme.text
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import kotlin.random.Random
 
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
@@ -87,6 +88,8 @@ fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewMod
     var email by remember { mutableStateOf("${profileInfo?.result?.email}") }
     var address by remember { mutableStateOf("${profileInfo?.result?.address}") }
     var edit by remember { mutableStateOf(false) }
+    var isChanged by remember { mutableStateOf(false) }
+    var avatarReloadKey by remember { mutableStateOf("") }
 
     val editIcon: Painter =
         if (edit) painterResource(R.drawable.save) else painterResource(R.drawable.edit)
@@ -100,8 +103,7 @@ fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewMod
             scope.launch {
                 profileViewModel.updateProfileAvatar(context, preferencesManager, it)
                 profileViewModel.getProfileInfo(preferencesManager)
-                //todo
-                // пофиксить моментальную смену аватарки
+                avatarReloadKey = Random.nextInt().toString()
             }
         }
     }
@@ -110,7 +112,7 @@ fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewMod
         modifier = Modifier.fillMaxSize()
     ) {
         Log.d("ProfileDebug", "profile avatar url: ${profileInfo?.result?.address}")
-        Drawer(navController, scope, preferencesManager, profileViewModel) { }
+        Drawer(navController, scope, preferencesManager, profileViewModel, avatarReloadKey) { }
 
         Box(
             modifier = Modifier
@@ -170,7 +172,12 @@ fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewMod
                     )
                     IconButton(
                         onClick = {
-                            edit = !edit
+                            scope.launch {
+                                if (edit && isChanged) {
+                                    profileViewModel.updateProfile(preferencesManager, firstName, lastName, address, email)
+                                }
+                                edit = !edit
+                            }
                         },
                         colors = IconButtonDefaults.iconButtonColors(
                             containerColor = background
@@ -211,11 +218,11 @@ fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewMod
                                     )
                                 } else {
                                     AsyncImage(
-                                        model = BASE_URL + profile.avatar,
+                                        model = BASE_URL + profile.avatar + "?avatarReloadKey=$avatarReloadKey",
                                         contentDescription = "Фото профиля",
                                         modifier = Modifier
                                             .clip(shape = RoundedCornerShape(50))
-                                            .size(70.dp)
+                                            .size(70.dp),
                                     )
                                 }
                             }
@@ -247,8 +254,8 @@ fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewMod
                             Spacer(Modifier.height(10.dp))
                             CustomTextField(
                                 value = firstName,
-                                onValueChange = { firstName = it },
-                                "Ваше имя",
+                                onValueChange = { firstName = it; isChanged = true },
+                                placeholder = "Ваше имя",
                                 readOnly = !edit
                             )
                         }
@@ -262,7 +269,7 @@ fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewMod
                             Spacer(Modifier.height(10.dp))
                             CustomTextField(
                                 value = lastName,
-                                onValueChange = { lastName = it },
+                                onValueChange = { lastName = it; isChanged = true },
                                 "Ваша фамилия",
                                 readOnly = !edit
                             )
@@ -278,7 +285,7 @@ fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewMod
                         Spacer(Modifier.height(10.dp))
                         CustomTextField(
                             value = email,
-                            onValueChange = { email = it },
+                            onValueChange = { email = it; isChanged = true },
                             "Ваш email",
                             readOnly = !edit
                         )
@@ -293,7 +300,7 @@ fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewMod
                         Spacer(Modifier.height(10.dp))
                         CustomTextField(
                             value = address,
-                            onValueChange = { address = it },
+                            onValueChange = { address = it; isChanged = true },
                             "Ваш адрес",
                             readOnly = !edit
                         )

@@ -2,6 +2,7 @@ package com.example.matule.domain
 
 import com.example.matule.domain.models.requests.Login
 import com.example.matule.domain.models.requests.Registration
+import com.example.matule.domain.models.requests.UpdateProfile
 import com.example.matule.domain.models.responses.AuthModelResult
 import com.example.matule.domain.models.responses.CategoryResult
 import com.example.matule.domain.models.responses.ErrorResult
@@ -42,4 +43,10 @@ interface RetrofitApi{
         @Header("Authorization") token: String,
         @Part avatar: MultipartBody.Part
     ): ErrorResult
+
+    @POST("api/v1/user/updateProfile")
+    suspend fun updateProfile(
+        @Header("Authorization") token: String,
+        @Body updateRequest: UpdateProfile
+    ): ProfileInfoResult
 }
