@@ -12,69 +12,96 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.matule.common.CustomTextField
-import com.example.matule.common.CustomTextFieldWithPassword
+import com.example.matule.common.components.CustomTextField
+import com.example.matule.common.components.CustomTextFieldWithPassword
+import com.example.matule.data.PreferencesManager
+import com.example.matule.domain.view.AuthViewModel
+import com.example.matule.domain.view.ProfileViewModel
+import com.example.matule.ui.theme.accent
+import com.example.matule.ui.theme.block
+import com.example.matule.ui.theme.disable
+import com.example.matule.ui.theme.red
+import com.example.matule.ui.theme.subTextLight
+import com.example.matule.ui.theme.subtextDark
+import com.example.matule.ui.theme.text
+import kotlinx.coroutines.launch
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(navController: NavController, profileViewModel: ProfileViewModel, viewModel: AuthViewModel = viewModel()) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var errorText by remember { mutableStateOf("") }
+
+    val context = LocalContext.current
+    val preferencesManager = remember { PreferencesManager(context) }
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(vertical = 30.dp)
-            .background(MaterialTheme.colorScheme.background),
+            .background(block),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
+            Spacer(Modifier.height(50.dp))
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "Привет!",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 30.sp
+                    color = text,
+                    fontSize = 40.sp,
+                    fontWeight = FontWeight.Bold
                 )
                 Spacer(Modifier.height(10.dp))
                 Text(
                     text = "Заполните свои данные",
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = subtextDark,
                     textAlign = TextAlign.Center,
-                    fontSize = 18.sp,
+                    fontSize = 24.sp,
                 )
             }
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(20.dp))
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Text(
+                    text = errorText,
+                    color = red,
+                    fontSize = 20.sp,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(Modifier.height(20.dp))
                 Column {
                     Text(
                         text = "Email",
-                        color = MaterialTheme.colorScheme.onBackground,
+                        color = text,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.ExtraLight
                     )
@@ -88,8 +115,8 @@ fun LoginScreen(navController: NavController) {
                 Spacer(Modifier.height(20.dp))
                 Column {
                     Text(
-                        text = "Email",
-                        color = MaterialTheme.colorScheme.onBackground,
+                        text = "Пароль",
+                        color = text,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.ExtraLight
                     )
@@ -97,7 +124,7 @@ fun LoginScreen(navController: NavController) {
                     CustomTextFieldWithPassword(
                         value = password,
                         onValueChange = { password = it },
-                        placeholder = "*********"
+                        placeholder = "●●●●●●●●"
                     )
                 }
                 Spacer(Modifier.height(6.dp))
@@ -105,7 +132,9 @@ fun LoginScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    TextButton(onClick = {}) {
+                    TextButton(onClick = {
+                        navController.navigate("ForgotPasswordScreen")
+                    }) {
                         Text(
                             text = "Востановить",
                             fontSize = 16.sp
@@ -113,11 +142,38 @@ fun LoginScreen(navController: NavController) {
                     }
                 }
                 Button(
-                    onClick = {},
+                    enabled = email.isNotEmpty() && password.isNotEmpty(),
+                    onClick = {
+                        scope.launch {
+                            val result = viewModel.login(email, password, preferencesManager)
+                            if (result.error != null){
+                                errorText = when (result.error) {
+                                    "wrong password" -> {
+                                        "Неправильный пароль"
+                                    }
+                                    "user not found" -> {
+                                        "Такого пользователя не существует"
+                                    }
+                                    else -> {
+                                        "Произошла ошибка"
+                                    }
+                                }
+                            } else {
+                                profileViewModel.getProfileInfo(preferencesManager)
+
+                                navController.navigate("MainScreen") {
+                                    popUpTo(navController.graph.startDestinationId) {
+                                        inclusive = true
+                                    }
+                                    launchSingleTop = true
+                                }
+                            }
+                        }
+                    },
                     colors = ButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
+                        containerColor = accent,
                         contentColor = Color.Transparent,
-                        disabledContainerColor = MaterialTheme.colorScheme.secondary,
+                        disabledContainerColor = disable,
                         disabledContentColor = Color.Transparent
                     ),
                     modifier = Modifier.fillMaxWidth(),
@@ -125,7 +181,7 @@ fun LoginScreen(navController: NavController) {
                 ) {
                     Text(
                         text = "Войти",
-                        color = MaterialTheme.colorScheme.onSecondary,
+                        color = subTextLight,
                         fontSize = 18.sp
                     )
                 }
@@ -136,7 +192,7 @@ fun LoginScreen(navController: NavController) {
         ) {
             Text(
                 text = "Вы впервые?",
-                color = MaterialTheme.colorScheme.onSurface,
+                color = subtextDark,
                 fontSize = 16.sp
             )
             TextButton(onClick = {
@@ -144,7 +200,7 @@ fun LoginScreen(navController: NavController) {
             }) {
                 Text(
                     text = "Создать пользователя",
-                    color = MaterialTheme.colorScheme.primary,
+                    color = accent,
                     fontSize = 16.sp
                 )
             }

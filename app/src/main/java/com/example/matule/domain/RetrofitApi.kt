@@ -3,8 +3,16 @@ package com.example.matule.domain
 import com.example.matule.domain.models.requests.Login
 import com.example.matule.domain.models.requests.Registration
 import com.example.matule.domain.models.responses.AuthModelResult
+import com.example.matule.domain.models.responses.CategoryResult
+import com.example.matule.domain.models.responses.ErrorResult
+import com.example.matule.domain.models.responses.ProfileInfoResult
+import okhttp3.MultipartBody
 import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 
 interface RetrofitApi{
     @POST("api/v1/user/register")
@@ -12,4 +20,26 @@ interface RetrofitApi{
 
     @POST("api/v1/user/login")
     suspend fun login(@Body loginReq: Login): AuthModelResult
+
+    @POST("api/v1/user/refresh")
+    suspend fun refresh(@Header("X-Refresh-Token") token: String ): AuthModelResult
+
+    @POST("api/v1/user/sendOtp")
+    suspend fun sendEmail(@Body email: String): ErrorResult
+
+    @GET("api/v1/category/getAll")
+    suspend fun getAllCategories(): CategoryResult
+
+    @GET("api/v1/product/getAll")
+    suspend fun getAllProducts() // todo
+
+    @GET("api/v1/user/getInfo")
+    suspend fun getProfileInfo(@Header("Authorization") token: String): ProfileInfoResult
+
+    @Multipart
+    @POST("api/v1/user/updateProfileAvatar")
+    suspend fun updateProfileAvatar(
+        @Header("Authorization") token: String,
+        @Part avatar: MultipartBody.Part
+    ): ErrorResult
 }

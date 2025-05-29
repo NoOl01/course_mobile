@@ -20,64 +20,92 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.matule.common.CustomTextField
-import com.example.matule.common.CustomTextFieldWithPassword
+import com.example.matule.common.components.CustomTextField
+import com.example.matule.common.components.CustomTextFieldWithPassword
+import com.example.matule.data.PreferencesManager
+import com.example.matule.domain.view.AuthViewModel
+import com.example.matule.domain.view.ProfileViewModel
+import com.example.matule.ui.theme.accent
+import com.example.matule.ui.theme.block
+import com.example.matule.ui.theme.disable
+import com.example.matule.ui.theme.red
+import com.example.matule.ui.theme.subTextLight
+import com.example.matule.ui.theme.subtextDark
+import com.example.matule.ui.theme.text
+import kotlinx.coroutines.launch
 
 @Composable
-fun RegistrationScreen(navController: NavController) {
+fun RegistrationScreen(navController: NavController, profileViewModel: ProfileViewModel, viewModel: AuthViewModel = viewModel()) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var errorText by remember { mutableStateOf("") }
     var check by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val preferencesManager = remember { PreferencesManager(context) }
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(vertical = 30.dp)
-            .background(MaterialTheme.colorScheme.background),
+            .background(block),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
+            Spacer(Modifier.height(50.dp))
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "Регистрация",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 30.sp
+                    color = text,
+                    fontSize = 40.sp,
+                    fontWeight = FontWeight.Bold
                 )
                 Spacer(Modifier.height(10.dp))
                 Text(
                     text = "Заполните свои данные",
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = subtextDark,
                     textAlign = TextAlign.Center,
-                    fontSize = 18.sp,
+                    fontSize = 24.sp,
                 )
             }
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(20.dp))
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Text(
+                    text = errorText,
+                    color = red,
+                    fontSize = 20.sp,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(Modifier.height(20.dp))
                 Column {
                     Text(
                         text = "Ваше имя",
-                        color = MaterialTheme.colorScheme.onBackground,
+                        color = text,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.ExtraLight
                     )
@@ -92,7 +120,7 @@ fun RegistrationScreen(navController: NavController) {
                 Column {
                     Text(
                         text = "Email",
-                        color = MaterialTheme.colorScheme.onBackground,
+                        color = text,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.ExtraLight
                     )
@@ -106,8 +134,8 @@ fun RegistrationScreen(navController: NavController) {
                 Spacer(Modifier.height(20.dp))
                 Column {
                     Text(
-                        text = "Email",
-                        color = MaterialTheme.colorScheme.onBackground,
+                        text = "Пароль",
+                        color = text,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.ExtraLight
                     )
@@ -115,7 +143,7 @@ fun RegistrationScreen(navController: NavController) {
                     CustomTextFieldWithPassword(
                         value = password,
                         onValueChange = { password = it },
-                        placeholder = "*********"
+                        placeholder = "●●●●●●●●"
                     )
                 }
                 Spacer(Modifier.height(10.dp))
@@ -135,11 +163,27 @@ fun RegistrationScreen(navController: NavController) {
                 }
                 Spacer(Modifier.height(20.dp))
                 Button(
-                    onClick = {},
+                    enabled = name.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty() && check,
+                    onClick = {
+                        scope.launch {
+                            val result = viewModel.registration(name, email, password,  preferencesManager)
+                            if (result.error != null){
+                                errorText = "Произошла ошибка"
+                            } else {
+                                profileViewModel.getProfileInfo(preferencesManager)
+                                navController.navigate("MainScreen") {
+                                    popUpTo(navController.graph.startDestinationId) {
+                                        inclusive = true
+                                    }
+                                    launchSingleTop = true
+                                }
+                            }
+                        }
+                    },
                     colors = ButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
+                        containerColor = accent,
                         contentColor = Color.Transparent,
-                        disabledContainerColor = MaterialTheme.colorScheme.secondary,
+                        disabledContainerColor = disable,
                         disabledContentColor = Color.Transparent
                     ),
                     modifier = Modifier.fillMaxWidth(),
@@ -147,7 +191,7 @@ fun RegistrationScreen(navController: NavController) {
                 ) {
                     Text(
                         text = "Зарегистрироваться",
-                        color = MaterialTheme.colorScheme.onSecondary,
+                        color = subTextLight,
                         fontSize = 18.sp
                     )
                 }
@@ -158,7 +202,7 @@ fun RegistrationScreen(navController: NavController) {
         ) {
             Text(
                 text = "Есть аккаунт?",
-                color = MaterialTheme.colorScheme.onSurface,
+                color = subtextDark,
                 fontSize = 16.sp
             )
             TextButton(onClick = {
@@ -166,7 +210,7 @@ fun RegistrationScreen(navController: NavController) {
             }) {
                 Text(
                     text = "Войти",
-                    color = MaterialTheme.colorScheme.primary,
+                    color = accent,
                     fontSize = 16.sp
                 )
             }

@@ -7,60 +7,84 @@ import com.example.matule.domain.RetrofitInstance
 import com.example.matule.domain.models.requests.Login
 import com.example.matule.domain.models.requests.Registration
 import com.example.matule.domain.models.responses.AuthModelResult
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.example.matule.domain.models.responses.ErrorResult
 import kotlinx.coroutines.launch
 
-class AuthViewMode : ViewModel() {
-    private val _auth = MutableStateFlow<AuthModelResult?>(null)
-    val auth: StateFlow<AuthModelResult?> = _auth.asStateFlow()
-
-    fun registration(
+class AuthViewModel : ViewModel() {
+    suspend fun registration(
         name: String,
         email: String,
         password: String,
         preferencesManager: PreferencesManager
-    ) {
-        viewModelScope.launch {
-            try {
-                val newReg = Registration(name, email, password)
-                val response = RetrofitInstance.apiService.register(newReg)
-                if (response.result != null && response.error == null){
-                    preferencesManager.saveAuthData(
-                        response.result.access_token,
-                        response.result.refresh_token
-                    )
-                    _auth.value = response
-                } else {
-                    _auth.value = AuthModelResult(null, "Invalid credentials")
-                }
-            } catch (ex: Exception) {
-                _auth.value = AuthModelResult(null, ex.message)
+    ): AuthModelResult {
+
+        return try {
+            val request = Registration(name, email, password)
+            val response = RetrofitInstance.apiService.register(request)
+            if (response.result != null && response.error == null) {
+                preferencesManager.saveAuthData(
+                    response.result.access_token,
+                    response.result.refresh_token
+                )
+                response
+            } else {
+                AuthModelResult(null, "Invalid credentials")
             }
+        } catch (ex: Exception) {
+            AuthModelResult(null, ex.message)
         }
+
     }
 
-    fun login(
+    suspend fun login(
         email: String,
         password: String,
         preferencesManager: PreferencesManager
-    ) {
+    ): AuthModelResult {
+        return try {
+            val request = Login(email, password)
+            val response = RetrofitInstance.apiService.login(request)
+            if (response.result != null && response.error == null) {
+                preferencesManager.saveAuthData(
+                    response.result.access_token,
+                    response.result.refresh_token
+                )
+                response
+            } else {
+                AuthModelResult(null, "Invalid credentials")
+            }
+        } catch (ex: Exception) {
+            AuthModelResult(null, ex.message)
+        }
+    }
+
+    suspend fun sendEmail(email: String): ErrorResult? {
+        return try {
+            RetrofitInstance.apiService.sendEmail(email)
+        } catch (ex: Exception) {
+            ErrorResult(ex.message!!)
+        }
+    }
+
+    private suspend fun refresh(refreshToken: String): AuthModelResult {
+        return try {
+            RetrofitInstance.apiService.refresh(refreshToken)
+        } catch (ex: Exception) {
+            AuthModelResult(null, ex.message)
+        }
+    }
+
+    fun refreshToken(preferencesManager: PreferencesManager) {
         viewModelScope.launch {
-            try {
-                val newReg = Login(email, password)
-                val response = RetrofitInstance.apiService.login(newReg)
-                if (response.result != null && response.error == null){
+            val token = preferencesManager.getAuthData()
+            if (token != null) {
+                val result = refresh("Bearer ${token.refreshToken}")
+                result.result?.let {
                     preferencesManager.saveAuthData(
-                        response.result.access_token,
-                        response.result.refresh_token
+                        it.access_token,
+                        it.refresh_token
                     )
-                    _auth.value = response
-                } else {
-                    _auth.value = AuthModelResult(null, "Invalid credentials")
                 }
-            } catch (ex: Exception) {
-                _auth.value = AuthModelResult(null, ex.message)
             }
         }
     }

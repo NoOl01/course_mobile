@@ -4,20 +4,27 @@ import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
 
 val Context.dataStore by preferencesDataStore(name = "app_prefs")
+
+data class AuthData(
+    val accessToken: String,
+    val refreshToken: String
+)
 
 class PreferencesManager(private val context: Context) {
     private val authKey = stringPreferencesKey("auth_info")
 
-    val getAuthData: Flow<Array<String>?> = context.dataStore.data
-        .map { preferences ->
-            preferences[authKey]?.split(" ")?.let {
-                if (it.size == 2) Array(2) { index -> it[index]} else null
-            } ?: Array(2) {" "}
+    suspend fun getAuthData(): AuthData? {
+        val preferences = context.dataStore.data.first()
+        return preferences[authKey]?.split(" ")?.takeIf { it.size == 2 }?.let {
+            AuthData(
+                accessToken = it[0],
+                refreshToken = it[1]
+            )
         }
+    }
 
     suspend fun saveAuthData(accessToken: String, refreshToken: String){
         val authData = "$accessToken $refreshToken"

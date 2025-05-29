@@ -5,16 +5,23 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import com.example.matule.domain.view.ProfileViewModel
+import com.example.matule.presenter.ForgotPasswordScreen
 import com.example.matule.presenter.LoginScreen
 import com.example.matule.presenter.MainScreen
+import com.example.matule.presenter.ProfileScreen
 import com.example.matule.presenter.RegistrationScreen
+import com.example.matule.presenter.SendOtpScreen
 
 @Composable
 fun AppNavigation(
     navController: NavHostController,
-    startDestination: String
+    startDestination: String,
+    profileViewModel: ProfileViewModel
 ) {
     NavHost(
         navController, startDestination = startDestination,
@@ -22,8 +29,17 @@ fun AppNavigation(
         exitTransition = { fadeOut(animationSpec = tween(0)) },
         popEnterTransition = { fadeIn(animationSpec = tween(0)) },
         popExitTransition = { fadeOut(animationSpec = tween(0)) }) {
-        composable("MainScreen") { MainScreen() }
-        composable("LoginScreen") { LoginScreen(navController) }
-        composable("RegistrationScreen") { RegistrationScreen(navController) }
+        composable("MainScreen") { MainScreen(navController, profileViewModel) }
+        composable("LoginScreen") { LoginScreen(navController, profileViewModel) }
+        composable("RegistrationScreen") { RegistrationScreen(navController, profileViewModel) }
+        composable("ProfileScreen") { ProfileScreen(navController, profileViewModel) }
+        composable("ForgotPasswordScreen") { ForgotPasswordScreen(navController) }
+        composable(
+            "SendOtpScreen/{email}",
+            arguments = listOf(navArgument("email") { type = NavType.StringType })
+        ) { stackEntry ->
+            val email = stackEntry.arguments?.getString("email")
+            SendOtpScreen(navController, email!!)
+        }
     }
 }

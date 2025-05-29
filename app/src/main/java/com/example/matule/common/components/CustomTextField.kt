@@ -1,4 +1,4 @@
-package com.example.matule.common
+package com.example.matule.common.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -8,12 +8,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,17 +26,21 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.matule.R
+import com.example.matule.ui.theme.background
+import com.example.matule.ui.theme.hint
+import com.example.matule.ui.theme.text
 
 @Composable
 fun CustomTextField(
     value: String,
     onValueChange: (String) -> Unit,
-    placeholder: String
+    placeholder: String,
+    readOnly: Boolean = false
 ) {
     Box(
         modifier = Modifier
             .clip(shape = RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surface),
+            .background(background),
     ) {
         Row(
             modifier = Modifier
@@ -52,20 +52,21 @@ fun CustomTextField(
                 if (value.isEmpty()) {
                     Text(
                         text = placeholder,
-                        color = MaterialTheme.colorScheme.tertiary,
-                        fontSize = 16.sp
+                        color = hint,
+                        fontSize = 20.sp
                     )
                 }
                 BasicTextField(
                     value = value,
                     onValueChange = { onValueChange(it.take(30)) },
                     textStyle = TextStyle(
-                        fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.onBackground
+                        fontSize = 20.sp,
+                        color = text
                     ),
                     modifier = Modifier.fillMaxWidth(),
                     maxLines = 1,
-                    singleLine = true
+                    singleLine = true,
+                    readOnly = readOnly
                 )
             }
         }
@@ -83,7 +84,7 @@ fun CustomTextFieldWithPassword(
     Box(
         modifier = Modifier
             .clip(shape = RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surface),
+            .background(background),
     ) {
         Row(
             modifier = Modifier
@@ -95,16 +96,16 @@ fun CustomTextFieldWithPassword(
                 if (value.isEmpty()) {
                     Text(
                         text = placeholder,
-                        color = MaterialTheme.colorScheme.tertiary,
-                        fontSize = 16.sp
+                        color = hint,
+                        fontSize = 20.sp
                     )
                 }
                 BasicTextField(
                     value = value,
                     onValueChange = { onValueChange(it.take(30)) },
                     textStyle = TextStyle(
-                        fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.onBackground
+                        fontSize = 20.sp,
+                        color = text
                     ),
                     modifier = Modifier.fillMaxWidth(),
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -117,7 +118,7 @@ fun CustomTextFieldWithPassword(
                 Icon(
                     painter = painterResource(if (passwordVisible) R.drawable.visibility else R.drawable.visibility_off),
                     contentDescription = if (passwordVisible) "Скрыть пароль" else "Показать пароль",
-                    tint = MaterialTheme.colorScheme.tertiary
+                    tint = hint
                 )
             }
         }
