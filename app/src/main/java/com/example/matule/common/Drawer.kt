@@ -85,7 +85,7 @@ fun Drawer(
         DrawerItem("Корзина", onClick = onClose, R.drawable.bag_drawe, interactionSource)
         DrawerItem("Избранное", onClick = onClose, R.drawable.favorite_drawe, interactionSource)
         DrawerItem("Заказы", onClick = onClose, R.drawable.orders_drawe, interactionSource)
-        DrawerItem("Уведомления", onClick = onClose, R.drawable.notification_drawe_r, interactionSource)
+        DrawerItem("Уведомления", onClick = {navController.navigate("NotificationScreen")}, R.drawable.notification_drawe_r, interactionSource)
         DrawerItem("Настройки", onClick = onClose, R.drawable.settings_drawe, interactionSource)
 
         HorizontalDivider(

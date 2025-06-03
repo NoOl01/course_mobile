@@ -13,6 +13,8 @@ import com.example.matule.domain.view.ProfileViewModel
 import com.example.matule.presenter.ForgotPasswordScreen
 import com.example.matule.presenter.LoginScreen
 import com.example.matule.presenter.MainScreen
+import com.example.matule.presenter.NotificationScreen
+import com.example.matule.presenter.ProductScreen
 import com.example.matule.presenter.ProfileScreen
 import com.example.matule.presenter.RegistrationScreen
 import com.example.matule.presenter.SendOtpScreen
@@ -34,12 +36,19 @@ fun AppNavigation(
         composable("RegistrationScreen") { RegistrationScreen(navController, profileViewModel) }
         composable("ProfileScreen") { ProfileScreen(navController, profileViewModel) }
         composable("ForgotPasswordScreen") { ForgotPasswordScreen(navController) }
+        composable("NotificationScreen") { NotificationScreen(navController, profileViewModel) }
         composable(
             "SendOtpScreen/{email}",
             arguments = listOf(navArgument("email") { type = NavType.StringType })
         ) { stackEntry ->
             val email = stackEntry.arguments?.getString("email")
             SendOtpScreen(navController, email!!)
+        }
+        composable("ProductScreen/{id}",
+            arguments = listOf(navArgument("id") {type = NavType.LongType})
+        ) { stackEntry ->
+            val id = stackEntry.arguments?.getLong("id")
+            ProductScreen(navController, id!!, profileViewModel)
         }
     }
 }

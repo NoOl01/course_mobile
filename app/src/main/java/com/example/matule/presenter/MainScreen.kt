@@ -1,6 +1,7 @@
 package com.example.matule.presenter
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -10,6 +11,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -50,21 +52,28 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.matule.R
 import com.example.matule.common.Drawer
+import com.example.matule.common.components.ProductCard
 import com.example.matule.common.components.SearchButton
 import com.example.matule.data.PreferencesManager
 import com.example.matule.domain.view.CategoryViewModel
+import com.example.matule.domain.view.ProductViewModel
 import com.example.matule.domain.view.ProfileViewModel
 import com.example.matule.ui.theme.background
 import com.example.matule.ui.theme.block
 import com.example.matule.ui.theme.text
-import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
-fun MainScreen(navController: NavController, profileViewModel: ProfileViewModel, viewModel: CategoryViewModel = viewModel()) {
+fun MainScreen(
+    navController: NavController,
+    profileViewModel: ProfileViewModel,
+    categoryViewModel: CategoryViewModel = viewModel(),
+    productViewModel: ProductViewModel = viewModel()
+) {
     val scope = rememberCoroutineScope()
-    val result by viewModel.categories.collectAsState()
+    val categories by categoryViewModel.categories.collectAsState()
+    val products by productViewModel.products.collectAsState()
     val context = LocalContext.current
     val preferencesManager = remember { PreferencesManager(context) }
     val interactionSource = remember { MutableInteractionSource() }
@@ -82,9 +91,8 @@ fun MainScreen(navController: NavController, profileViewModel: ProfileViewModel,
     )
 
     LaunchedEffect(Unit) {
-        scope.launch {
-            viewModel.getAllCategories()
-        }
+        categoryViewModel.getAllCategories()
+        productViewModel.getAllProducts(preferencesManager)
     }
 
     Box(
@@ -165,7 +173,7 @@ fun MainScreen(navController: NavController, profileViewModel: ProfileViewModel,
                     SearchButton { }
                 }
 
-                result?.result?.let { categoriesList ->
+                categories?.result?.let { categoriesList ->
                     Spacer(Modifier.height(10.dp))
                     Column(
                         modifier = Modifier.padding(horizontal = 10.dp)
@@ -198,6 +206,31 @@ fun MainScreen(navController: NavController, profileViewModel: ProfileViewModel,
                                             fontSize = 20.sp
                                         )
                                     }
+                                }
+                            }
+                        }
+                        Spacer(Modifier.height(20.dp))
+                        products?.result?.let { productsList ->
+                            Log.d("MAINSCREEN", "$productsList")
+                            FlowRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp)
+                            ) {
+                                productsList.forEach { product ->
+                                    ProductCard(
+                                        id = product.id,
+                                        name = product.name,
+                                        price = product.price,
+                                        image = product.image,
+                                        isLiked = product.is_liked,
+                                        inCart = product.in_cart,
+                                        toCart = {},
+                                        toFavourite = {},
+                                        onClick = {
+                                            navController.navigate("ProductScreen/${product.id}")
+                                        }
+                                    )
                                 }
                             }
                         }
