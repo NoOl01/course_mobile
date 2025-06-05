@@ -64,7 +64,10 @@ import kotlin.random.Random
 
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
-fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewModel) {
+fun ProfileScreen(
+    navController: NavController,
+    profileViewModel: ProfileViewModel
+) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val preferencesManager = remember { PreferencesManager(context) }
@@ -174,7 +177,13 @@ fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewMod
                         onClick = {
                             scope.launch {
                                 if (edit && isChanged) {
-                                    profileViewModel.updateProfile(preferencesManager, firstName, lastName, address, email)
+                                    profileViewModel.updateProfile(
+                                        preferencesManager,
+                                        firstName,
+                                        lastName,
+                                        address,
+                                        email
+                                    )
                                 }
                                 edit = !edit
                             }
@@ -232,7 +241,7 @@ fun ProfileScreen(navController: NavController, profileViewModel: ProfileViewMod
                                     fontSize = 24.sp
                                 )
                                 Spacer(Modifier.height(10.dp))
-                                Row (
+                                Row(
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Text(

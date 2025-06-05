@@ -37,7 +37,6 @@ import com.example.matule.ui.theme.subtextDark
 
 @Composable
 fun ProductCard(
-    id: Long,
     name: String,
     price: Float,
     image: String,
@@ -50,7 +49,7 @@ fun ProductCard(
     val favIcon =
         if (isLiked) painterResource(R.drawable.heart_fav) else painterResource(R.drawable.heart)
     val cartIcon =
-        if (inCart) painterResource(R.drawable.cart) else painterResource(R.drawable.plus)
+        if (inCart) painterResource(R.drawable.cart_truck) else painterResource(R.drawable.plus)
     val interactionSource = remember { MutableInteractionSource() }
 
     Card(
@@ -115,7 +114,7 @@ fun ProductCard(
                         .background(accent),
                 ) {
                     IconButton(
-                        onClick = { toFavourite() }
+                        onClick = { toCart() }
                     ) {
                         Icon(
                             painter = cartIcon,

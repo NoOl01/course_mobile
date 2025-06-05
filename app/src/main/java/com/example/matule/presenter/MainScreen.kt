@@ -1,7 +1,6 @@
 package com.example.matule.presenter
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -55,12 +54,15 @@ import com.example.matule.common.Drawer
 import com.example.matule.common.components.ProductCard
 import com.example.matule.common.components.SearchButton
 import com.example.matule.data.PreferencesManager
+import com.example.matule.domain.view.CartViewModel
 import com.example.matule.domain.view.CategoryViewModel
+import com.example.matule.domain.view.FavouriteViewModel
 import com.example.matule.domain.view.ProductViewModel
 import com.example.matule.domain.view.ProfileViewModel
 import com.example.matule.ui.theme.background
 import com.example.matule.ui.theme.block
 import com.example.matule.ui.theme.text
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 @SuppressLint("UseOfNonLambdaOffsetOverload")
@@ -69,7 +71,9 @@ fun MainScreen(
     navController: NavController,
     profileViewModel: ProfileViewModel,
     categoryViewModel: CategoryViewModel = viewModel(),
-    productViewModel: ProductViewModel = viewModel()
+    productViewModel: ProductViewModel = viewModel(),
+    favouriteViewModel: FavouriteViewModel = viewModel(),
+    cartViewModel: CartViewModel = viewModel()
 ) {
     val scope = rememberCoroutineScope()
     val categories by categoryViewModel.categories.collectAsState()
@@ -211,22 +215,48 @@ fun MainScreen(
                         }
                         Spacer(Modifier.height(20.dp))
                         products?.result?.let { productsList ->
-                            Log.d("MAINSCREEN", "$productsList")
                             FlowRow(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(8.dp)
                             ) {
                                 productsList.forEach { product ->
+                                    var isLiked by remember { mutableStateOf(product.is_liked)}
+                                    var inCart by remember { mutableStateOf(product.in_cart)}
+
                                     ProductCard(
-                                        id = product.id,
                                         name = product.name,
                                         price = product.price,
                                         image = product.image,
-                                        isLiked = product.is_liked,
-                                        inCart = product.in_cart,
-                                        toCart = {},
-                                        toFavourite = {},
+                                        isLiked = isLiked,
+                                        inCart = inCart,
+                                        toCart = {
+                                            scope.launch {
+                                                if (!inCart){
+                                                    val err = cartViewModel.addToCart(preferencesManager, product.id)
+                                                    if (err.error == null){
+                                                        inCart = true
+                                                    }
+                                                } else {
+                                                    navController.navigate("CartScreen")
+                                                }
+                                            }
+                                        },
+                                        toFavourite = {
+                                            scope.launch {
+                                                if (!isLiked){
+                                                    val err = favouriteViewModel.addToFavourite(preferencesManager, product.id)
+                                                    if (err.error == null){
+                                                        isLiked = true
+                                                    }
+                                                } else {
+                                                    val err = favouriteViewModel.deleteFromFavourite(preferencesManager, product.id)
+                                                    if (err.error == null){
+                                                        isLiked = false
+                                                    }
+                                                }
+                                            }
+                                        },
                                         onClick = {
                                             navController.navigate("ProductScreen/${product.id}")
                                         }

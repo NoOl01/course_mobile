@@ -48,6 +48,7 @@ fun App(viewModel: AuthViewModel = viewModel(), profileViewModel: ProfileViewMod
     LaunchedEffect(Unit) {
         authData = preferencesManager.getAuthData()
         viewModel.refreshToken(preferencesManager)
+        viewModel.startPeriodicTokenRefresh(preferencesManager)
 
         authData?.let {
             profileViewModel.getProfileInfo(preferencesManager)

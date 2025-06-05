@@ -82,8 +82,8 @@ fun Drawer(
         Spacer(Modifier.height(20.dp))
 
         DrawerItem("Профиль", onClick = {navController.navigate("ProfileScreen")}, R.drawable.profile_drawe, interactionSource)
-        DrawerItem("Корзина", onClick = onClose, R.drawable.bag_drawe, interactionSource)
-        DrawerItem("Избранное", onClick = onClose, R.drawable.favorite_drawe, interactionSource)
+        DrawerItem("Корзина", onClick = {navController.navigate("CartScreen")}, R.drawable.bag_drawe, interactionSource)
+        DrawerItem("Избранное", onClick = {navController.navigate("FavouriteScreen")}, R.drawable.favorite_drawe, interactionSource)
         DrawerItem("Заказы", onClick = onClose, R.drawable.orders_drawe, interactionSource)
         DrawerItem("Уведомления", onClick = {navController.navigate("NotificationScreen")}, R.drawable.notification_drawe_r, interactionSource)
         DrawerItem("Настройки", onClick = onClose, R.drawable.settings_drawe, interactionSource)

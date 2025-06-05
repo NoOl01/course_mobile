@@ -9,6 +9,7 @@ import com.example.matule.domain.models.responses.ErrorResult
 import com.example.matule.domain.models.responses.NotificationResult
 import com.example.matule.domain.models.responses.ProductInfoResult
 import com.example.matule.domain.models.responses.ProductsResult
+import com.example.matule.domain.models.responses.ProductsResultForCart
 import com.example.matule.domain.models.responses.ProfileInfoResult
 import okhttp3.MultipartBody
 import retrofit2.http.Body
@@ -64,4 +65,46 @@ interface RetrofitApi{
     suspend fun getAllNotifications(
         @Header ("Authorization") token: String,
     ): NotificationResult
+
+    @POST("api/v1/favourite/add")
+    suspend fun addToFavourite(
+        @Header ("Authorization") token: String,
+        @Query ("product_id") productId: Long
+    ): ErrorResult
+
+    @POST("api/v1/favourite/delete")
+    suspend fun deleteFromFavourite(
+        @Header ("Authorization") token: String,
+        @Query ("product_id") productId: Long
+    ): ErrorResult
+
+    @GET("api/v1/favourite/getAll")
+    suspend fun getAllFavourite(
+        @Header ("Authorization") token: String,
+    ): ProductsResult
+
+    @POST("api/v1/cart/add")
+    suspend fun addToCart(
+        @Header ("Authorization") token: String,
+        @Query ("product_id") productId: Long
+    ): ErrorResult
+
+    @POST("api/v1/cart/delete")
+    suspend fun deleteFromCart(
+        @Header ("Authorization") token: String,
+        @Query ("product_id") productId: Long
+    ): ErrorResult
+
+    @POST("api/v1/cart/updateCount")
+    suspend fun cartUpdateCount(
+        @Header ("Authorization") token: String,
+        @Query ("cart_id") cartId: Long,
+        @Query ("count") count: Int,
+        @Query ("action") action: String
+    ): ErrorResult
+
+    @GET("api/v1/cart/getAll")
+    suspend fun getAllCart(
+        @Header ("Authorization") token: String,
+    ): ProductsResultForCart
 }

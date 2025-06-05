@@ -10,6 +10,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.matule.domain.view.ProfileViewModel
+import com.example.matule.presenter.CartScreen
+import com.example.matule.presenter.FavouriteScreen
 import com.example.matule.presenter.ForgotPasswordScreen
 import com.example.matule.presenter.LoginScreen
 import com.example.matule.presenter.MainScreen
@@ -37,6 +39,8 @@ fun AppNavigation(
         composable("ProfileScreen") { ProfileScreen(navController, profileViewModel) }
         composable("ForgotPasswordScreen") { ForgotPasswordScreen(navController) }
         composable("NotificationScreen") { NotificationScreen(navController, profileViewModel) }
+        composable("CartScreen") { CartScreen(navController, profileViewModel) }
+        composable("FavouriteScreen") { FavouriteScreen(navController, profileViewModel) }
         composable(
             "SendOtpScreen/{email}",
             arguments = listOf(navArgument("email") { type = NavType.StringType })
@@ -48,7 +52,7 @@ fun AppNavigation(
             arguments = listOf(navArgument("id") {type = NavType.LongType})
         ) { stackEntry ->
             val id = stackEntry.arguments?.getLong("id")
-            ProductScreen(navController, id!!, profileViewModel)
+            ProductScreen(navController, id!!)
         }
     }
 }

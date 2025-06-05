@@ -1,5 +1,6 @@
 package com.example.matule.domain.view
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.matule.data.PreferencesManager
@@ -8,6 +9,7 @@ import com.example.matule.domain.models.requests.Login
 import com.example.matule.domain.models.requests.Registration
 import com.example.matule.domain.models.responses.AuthModelResult
 import com.example.matule.domain.models.responses.ErrorResult
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class AuthViewModel : ViewModel() {
@@ -78,7 +80,7 @@ class AuthViewModel : ViewModel() {
         viewModelScope.launch {
             val token = preferencesManager.getAuthData()
             if (token != null) {
-                val result = refresh("Bearer ${token.refreshToken}")
+                val result = refresh("Refresh ${token.refreshToken}")
                 result.result?.let {
                     preferencesManager.saveAuthData(
                         it.access_token,
@@ -88,4 +90,14 @@ class AuthViewModel : ViewModel() {
             }
         }
     }
+
+    fun startPeriodicTokenRefresh(preferencesManager: PreferencesManager) {
+        viewModelScope.launch {
+            while (true) {
+                delay(55 * 60 * 1000L)
+                refreshToken(preferencesManager)
+            }
+        }
+    }
+
 }
