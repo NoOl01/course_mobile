@@ -1,13 +1,16 @@
 package com.example.matule.domain.view
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.matule.data.PreferencesManager
 import com.example.matule.domain.RetrofitInstance
+import com.example.matule.domain.models.requests.CheckOtp
 import com.example.matule.domain.models.requests.Login
 import com.example.matule.domain.models.requests.Registration
+import com.example.matule.domain.models.requests.ResetPassword
+import com.example.matule.domain.models.requests.SendEmail
 import com.example.matule.domain.models.responses.AuthModelResult
+import com.example.matule.domain.models.responses.CheckOtpResponse
 import com.example.matule.domain.models.responses.ErrorResult
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -62,9 +65,28 @@ class AuthViewModel : ViewModel() {
 
     suspend fun sendEmail(email: String): ErrorResult? {
         return try {
-            RetrofitInstance.apiService.sendEmail(email)
+            val req = SendEmail(email)
+            RetrofitInstance.apiService.sendEmail(req)
         } catch (ex: Exception) {
             ErrorResult(ex.message!!)
+        }
+    }
+
+    suspend fun checkOtp(email: String, code: Int): CheckOtpResponse {
+        return try {
+            val req = CheckOtp(email = email, code = code)
+            RetrofitInstance.apiService.checkOtp(req)
+        } catch (ex: Exception) {
+            CheckOtpResponse(ex.message, null)
+        }
+    }
+
+    suspend fun resetPassword(email: String, token: String, password: String): ErrorResult {
+        return try {
+            val req = ResetPassword(email, token, password)
+            RetrofitInstance.apiService.resetPassword(req)
+        } catch (ex: Exception){
+            ErrorResult(ex.message)
         }
     }
 

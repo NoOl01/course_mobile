@@ -59,7 +59,7 @@ fun ForgotPasswordScreen(navController: NavController, viewModel: AuthViewModel 
     val keyBoardController = LocalSoftwareKeyboardController.current
 
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().padding(top = 40.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
@@ -102,7 +102,7 @@ fun ForgotPasswordScreen(navController: NavController, viewModel: AuthViewModel 
                 )
                 Spacer(Modifier.height(10.dp))
                 Text(
-                    text = "Введите свою учетную запись для сброса",
+                    text = "Введите ваш новый пароль",
                     color = subtextDark,
                     textAlign = TextAlign.Center,
                     fontSize = 24.sp,

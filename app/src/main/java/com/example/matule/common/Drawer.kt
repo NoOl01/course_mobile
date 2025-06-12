@@ -86,7 +86,7 @@ fun Drawer(
         DrawerItem("Избранное", onClick = {navController.navigate("FavouriteScreen")}, R.drawable.favorite_drawe, interactionSource)
         DrawerItem("Заказы", onClick = onClose, R.drawable.orders_drawe, interactionSource)
         DrawerItem("Уведомления", onClick = {navController.navigate("NotificationScreen")}, R.drawable.notification_drawe_r, interactionSource)
-        DrawerItem("Настройки", onClick = onClose, R.drawable.settings_drawe, interactionSource)
+        DrawerItem("Настройки", onClick = {navController.navigate("SettingsScreen")}, R.drawable.settings_drawe, interactionSource)
 
         HorizontalDivider(
             color = Color(0x3BF7F7F9),

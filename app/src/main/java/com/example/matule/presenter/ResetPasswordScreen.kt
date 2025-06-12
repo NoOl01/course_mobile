@@ -1,6 +1,5 @@
 package com.example.matule.presenter
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,21 +8,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -32,32 +32,26 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.matule.R
-import com.example.matule.common.components.OtpInput
+import com.example.matule.common.components.CustomTextFieldWithPassword
 import com.example.matule.domain.view.AuthViewModel
+import com.example.matule.ui.theme.accent
 import com.example.matule.ui.theme.background
+import com.example.matule.ui.theme.disable
 import com.example.matule.ui.theme.subTextLight
 import com.example.matule.ui.theme.subtextDark
 import com.example.matule.ui.theme.text
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@SuppressLint("DefaultLocale")
 @Composable
-fun SendOtpScreen(
+fun ResetPasswordScreen(
     navController: NavController,
     email: String,
+    token: String,
     viewModel: AuthViewModel = viewModel()
 ) {
-    var timer by remember { mutableIntStateOf(120) }
-    var otp by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) {
-        while (timer > 0) {
-            delay(1000)
-            timer -= 1
-        }
-    }
+    var password by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -98,59 +92,54 @@ fun SendOtpScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "OTP Проверка",
+                    text = "Забыл пароль",
                     color = text,
                     fontSize = 40.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(Modifier.height(10.dp))
                 Text(
-                    text = "Пожалуйста, проверьте свою электронную почту чтобы увидеть код подтверждения",
+                    text = "Введите свою учетную запись для сброса",
                     color = subtextDark,
                     textAlign = TextAlign.Center,
                     fontSize = 24.sp,
                 )
-            }
-            Spacer(Modifier.height(20.dp))
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "OTP Код",
-                    fontSize = 32.sp
+                Spacer(Modifier.height(60.dp))
+                CustomTextFieldWithPassword(
+                    value = password,
+                    onValueChange = { password = it },
+                    placeholder = "Пароль"
                 )
-                Spacer(Modifier.height(10.dp))
-                OtpInput { code ->
-                    scope.launch {
-                        val result = viewModel.checkOtp(email, code.toInt())
-                        if (result.error == null) {
-                            navController.navigate("ResetPasswordScreen/$email/${result.result}")
+                Spacer(Modifier.height(30.dp))
+                Button(
+                    onClick = {
+                        scope.launch {
+                            val err = viewModel.resetPassword(email, token, password)
+                            if (err.error == null) {
+                                navController.navigate("LoginScreen") {
+                                    popUpTo(navController.graph.startDestinationId) {
+                                        inclusive = true
+                                    }
+                                    launchSingleTop = true
+                                }
+                            }
                         }
-                    }
-                }
-            }
-            Spacer(Modifier.height(10.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                TextButton(onClick = {
-                    scope.launch {
-                        timer = 200
-                        viewModel.sendEmail(email)
-                    }
-                }) {
+                    },
+                    colors = ButtonColors(
+                        containerColor = accent,
+                        contentColor = Color.Transparent,
+                        disabledContainerColor = disable,
+                        disabledContentColor = Color.Transparent
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
                     Text(
-                        text = "Отправить заново",
-                        fontSize = 18.sp,
-                        color = if (timer != 0) subTextLight else subtextDark
+                        text = "Отправить",
+                        color = subTextLight,
+                        fontSize = 18.sp
                     )
                 }
-                Text(
-                    text = String.format("%02d:%02d", timer / 60, timer % 60),
-                    fontSize = 18.sp
-                )
             }
         }
         Spacer(Modifier.weight(1f))

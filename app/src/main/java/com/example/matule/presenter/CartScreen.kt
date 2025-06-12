@@ -92,6 +92,7 @@ fun CartScreen(
 
     var isMenuOpen by remember { mutableStateOf(false) }
     var isCheckOutOpen by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf("") }
 
     val offsetX by animateFloatAsState(if (isMenuOpen) 180f else 0f, label = "")
     val rotation by animateFloatAsState(if (isMenuOpen) -5f else 0f, label = "")
@@ -507,6 +508,18 @@ fun CartScreen(
                                                 )
                                             }
                                         }
+                                        Text(
+                                            text = error,
+                                            fontSize = 20.sp,
+                                            color = red
+                                        )
+                                        if (error == "Отсутствует адрес"){
+                                            Button(onClick = {
+                                                navController.navigate("ProfileScreen")
+                                            }) {
+                                                Text("Перейти в профиль")
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -603,7 +616,13 @@ fun CartScreen(
                                     ),
                                     shape = RoundedCornerShape(14.dp),
                                     onClick = {
-                                        isCheckOutOpen = true
+                                        if (!isCheckOutOpen){
+                                            isCheckOutOpen = true
+                                        } else {
+                                            if (profileInfo?.result?.address == null){
+                                                error = "Отсутствует адрес"
+                                            }
+                                        }
                                     }
                                 ) {
                                     Text(

@@ -168,6 +168,9 @@ fun RegistrationScreen(navController: NavController, profileViewModel: ProfileVi
                         scope.launch {
                             val result = viewModel.registration(name, email, password,  preferencesManager)
                             if (result.error != null){
+                                if (result.error == "User already exists"){
+                                    errorText = "Такой пользователь уже существует"
+                                }
                                 errorText = "Произошла ошибка"
                             } else {
                                 profileViewModel.getProfileInfo(preferencesManager)

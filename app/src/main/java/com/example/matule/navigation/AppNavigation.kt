@@ -19,7 +19,9 @@ import com.example.matule.presenter.NotificationScreen
 import com.example.matule.presenter.ProductScreen
 import com.example.matule.presenter.ProfileScreen
 import com.example.matule.presenter.RegistrationScreen
+import com.example.matule.presenter.ResetPasswordScreen
 import com.example.matule.presenter.SendOtpScreen
+import com.example.matule.presenter.SettingsScreen
 
 @Composable
 fun AppNavigation(
@@ -41,6 +43,7 @@ fun AppNavigation(
         composable("NotificationScreen") { NotificationScreen(navController, profileViewModel) }
         composable("CartScreen") { CartScreen(navController, profileViewModel) }
         composable("FavouriteScreen") { FavouriteScreen(navController, profileViewModel) }
+        composable("SettingsScreen") { SettingsScreen(navController, profileViewModel) }
         composable(
             "SendOtpScreen/{email}",
             arguments = listOf(navArgument("email") { type = NavType.StringType })
@@ -53,6 +56,17 @@ fun AppNavigation(
         ) { stackEntry ->
             val id = stackEntry.arguments?.getLong("id")
             ProductScreen(navController, id!!)
+        }
+        composable(
+            "ResetPasswordScreen/{email}/{token}",
+            arguments = listOf(
+                navArgument("email") { type = NavType.StringType },
+                navArgument("token") { type = NavType.StringType }
+            )
+        ) { stackEntry ->
+            val email = stackEntry.arguments?.getString("email")
+            val token = stackEntry.arguments?.getString("token")
+            ResetPasswordScreen(navController, email!!, token!!)
         }
     }
 }

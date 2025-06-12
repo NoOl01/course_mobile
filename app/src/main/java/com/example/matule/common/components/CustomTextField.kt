@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -21,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -35,7 +37,8 @@ fun CustomTextField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
-    readOnly: Boolean = false
+    readOnly: Boolean = false,
+    onlyNumber: Boolean = false
 ) {
     Box(
         modifier = Modifier
@@ -58,7 +61,9 @@ fun CustomTextField(
                 }
                 BasicTextField(
                     value = value,
-                    onValueChange = { onValueChange(it.take(30)) },
+                    onValueChange = { newText ->
+                        onValueChange(newText)
+                    },
                     textStyle = TextStyle(
                         fontSize = 20.sp,
                         color = text
@@ -66,7 +71,10 @@ fun CustomTextField(
                     modifier = Modifier.fillMaxWidth(),
                     maxLines = 1,
                     singleLine = true,
-                    readOnly = readOnly
+                    readOnly = readOnly,
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = if (onlyNumber) KeyboardType.Number else KeyboardType.Unspecified
+                    )
                 )
             }
         }

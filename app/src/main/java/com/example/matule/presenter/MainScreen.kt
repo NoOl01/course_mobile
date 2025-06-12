@@ -217,8 +217,8 @@ fun MainScreen(
                         products?.result?.let { productsList ->
                             FlowRow(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp)
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 productsList.forEach { product ->
                                     var isLiked by remember { mutableStateOf(product.is_liked)}

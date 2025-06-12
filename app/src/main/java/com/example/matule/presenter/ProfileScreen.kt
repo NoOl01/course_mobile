@@ -2,7 +2,6 @@ package com.example.matule.presenter
 
 import android.annotation.SuppressLint
 import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateDpAsState
@@ -23,30 +22,38 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.matule.R
@@ -54,27 +61,36 @@ import com.example.matule.common.Drawer
 import com.example.matule.common.components.CustomTextField
 import com.example.matule.data.PreferencesManager
 import com.example.matule.domain.BASE_URL
+import com.example.matule.domain.view.DaDataViewModel
 import com.example.matule.domain.view.ProfileViewModel
 import com.example.matule.ui.theme.background
 import com.example.matule.ui.theme.block
 import com.example.matule.ui.theme.text
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.random.Random
 
+@OptIn(FlowPreview::class)
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    profileViewModel: ProfileViewModel
+    profileViewModel: ProfileViewModel,
+    daDataViewModel: DaDataViewModel = viewModel()
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val preferencesManager = remember { PreferencesManager(context) }
     val interactionSource = remember { MutableInteractionSource() }
     val profileInfo by profileViewModel.profile.collectAsState()
+    val suggestions by daDataViewModel.suggestions.collectAsState()
 
     var isMenuOpen by remember { mutableStateOf(false) }
+    var addressEdit by remember { mutableStateOf(false) }
 
     val offsetX by animateFloatAsState(if (isMenuOpen) 180f else 0f, label = "")
     val rotation by animateFloatAsState(if (isMenuOpen) -5f else 0f, label = "")
@@ -111,10 +127,18 @@ fun ProfileScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        snapshotFlow { address }
+            .debounce(1000)
+            .filter { it.isNotBlank() }
+            .collectLatest { value ->
+                daDataViewModel.getAddresses(value)
+            }
+    }
+
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        Log.d("ProfileDebug", "profile avatar url: ${profileInfo?.result?.address}")
         Drawer(navController, scope, preferencesManager, profileViewModel, avatarReloadKey) { }
 
         Box(
@@ -309,10 +333,43 @@ fun ProfileScreen(
                         Spacer(Modifier.height(10.dp))
                         CustomTextField(
                             value = address,
-                            onValueChange = { address = it; isChanged = true },
-                            "Ваш адрес",
+                            onValueChange = {
+                                address = it
+                                isChanged = true
+                                addressEdit = true
+                            },
+                            "Адрес",
                             readOnly = !edit
                         )
+                    }
+                    if (suggestions.isNotEmpty() && addressEdit) {
+                        Spacer(Modifier.height(2.dp))
+                        LazyColumn (
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                            horizontalAlignment = Alignment.Start
+                        ) {
+                            items(suggestions) { suggestion ->
+                                Button(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonColors(
+                                        containerColor = background,
+                                        contentColor = Color.Unspecified,
+                                        disabledContainerColor = background,
+                                        disabledContentColor = Color.Unspecified
+                                    ),
+                                    shape = RoundedCornerShape(12.dp),
+                                    onClick = {
+                                        address = suggestion
+                                        addressEdit = false
+                                    }
+                                ) {
+                                    Text(
+                                        text = suggestion,
+                                        fontSize = 16.sp
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
