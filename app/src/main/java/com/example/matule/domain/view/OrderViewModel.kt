@@ -6,20 +6,21 @@ import com.example.matule.data.PreferencesManager
 import com.example.matule.domain.RetrofitInstance
 import com.example.matule.domain.models.requests.BuyProductRequest
 import com.example.matule.domain.models.responses.AllOrders
-import com.example.matule.domain.models.responses.BuyProductResponse
+import com.example.matule.domain.models.responses.ErrorResult
+import com.example.matule.domain.models.responses.OrderInfo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class OrderViewModel : ViewModel() {
-    private val _order = MutableStateFlow<BuyProductResponse?>(null)
-    val order: StateFlow<BuyProductResponse?> = _order.asStateFlow()
+    private val _order = MutableStateFlow<OrderInfo?>(null)
+    val order: StateFlow<OrderInfo?> = _order.asStateFlow()
 
     private val _allOrders = MutableStateFlow<AllOrders?>(null)
     val allOrders: StateFlow<AllOrders?> = _allOrders.asStateFlow()
 
-    suspend fun buyProduct(preferencesManager: PreferencesManager, productId: Long, count: Int) {
-        try {
+    suspend fun buyProduct(preferencesManager: PreferencesManager, productId: Long, count: Int): ErrorResult {
+        return try {
             val token = preferencesManager.getAuthData()
             if (token != null) {
                 val req = BuyProductRequest(productId, count)
@@ -27,11 +28,12 @@ class OrderViewModel : ViewModel() {
                     "Bearer ${token.accessToken}",
                     req
                 )
-                Log.d("ORDER", resp.toString())
-                _order.value = resp
+                ErrorResult(resp.error)
+            } else {
+                ErrorResult("Invalid credentials")
             }
         } catch (ex: Exception) {
-            _order.value = BuyProductResponse(ex.message, null)
+            ErrorResult(ex.message)
         }
     }
 
@@ -43,6 +45,20 @@ class OrderViewModel : ViewModel() {
             }
         } catch (ex: Exception) {
             _allOrders.value = AllOrders(ex.message, emptyList())
+        }
+    }
+
+    suspend fun getOrderInfo(preferencesManager: PreferencesManager, orderId: Long) {
+        try {
+            val token = preferencesManager.getAuthData()
+            if (token != null) {
+                val resp = RetrofitInstance.apiService.getOrderInfo("Bearer ${token.accessToken}", orderId)
+                _order.value = resp
+                Log.d("ORDER", resp.toString())
+            }
+        } catch (ex: Exception){
+            _order.value = OrderInfo(ex.message, null)
+            Log.d("ORDER", ex.message.toString())
         }
     }
 }

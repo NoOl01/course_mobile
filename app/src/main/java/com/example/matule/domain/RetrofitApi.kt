@@ -17,6 +17,7 @@ import com.example.matule.domain.models.responses.CheckOtpResponse
 import com.example.matule.domain.models.responses.DaDataAddressResponse
 import com.example.matule.domain.models.responses.ErrorResult
 import com.example.matule.domain.models.responses.NotificationResult
+import com.example.matule.domain.models.responses.OrderInfo
 import com.example.matule.domain.models.responses.ProductInfoResult
 import com.example.matule.domain.models.responses.ProductsResult
 import com.example.matule.domain.models.responses.ProductsResultForCart
@@ -136,11 +137,19 @@ interface RetrofitApi {
         @Header("Authorization") token: String
     ): AllOrders
 
+    @GET("api/v1/order/getById")
+    suspend fun getOrderInfo(
+        @Header("Authorization") token: String,
+        @Query("order_id") orderId: Long
+    ): OrderInfo
+
     @POST("api/v1/settings/moneyAction")
     suspend fun moneyAction(
         @Header("Authorization") token: String,
         @Body moneyActionRequest: SettingsMoneyActionRequest
     ): ErrorResult
+
+
 }
 
 interface DaDataApi {

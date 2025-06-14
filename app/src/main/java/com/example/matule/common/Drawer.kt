@@ -84,7 +84,7 @@ fun Drawer(
         DrawerItem("Профиль", onClick = {navController.navigate("ProfileScreen")}, R.drawable.profile_drawe, interactionSource)
         DrawerItem("Корзина", onClick = {navController.navigate("CartScreen")}, R.drawable.bag_drawe, interactionSource)
         DrawerItem("Избранное", onClick = {navController.navigate("FavouriteScreen")}, R.drawable.favorite_drawe, interactionSource)
-        DrawerItem("Заказы", onClick = onClose, R.drawable.orders_drawe, interactionSource)
+        DrawerItem("Заказы", onClick = {navController.navigate("OrdersScreen")}, R.drawable.orders_drawe, interactionSource)
         DrawerItem("Уведомления", onClick = {navController.navigate("NotificationScreen")}, R.drawable.notification_drawe_r, interactionSource)
         DrawerItem("Настройки", onClick = {navController.navigate("SettingsScreen")}, R.drawable.settings_drawe, interactionSource)
 

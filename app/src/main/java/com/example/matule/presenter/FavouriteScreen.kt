@@ -41,9 +41,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.matule.R
 import com.example.matule.common.Drawer
+import com.example.matule.common.components.BottomBar
 import com.example.matule.common.components.ProductCard
 import com.example.matule.data.PreferencesManager
 import com.example.matule.domain.view.CartViewModel
@@ -195,6 +198,15 @@ fun FavouriteScreen(
                         }
                     }
                 }
+            }
+            val navBackStackEntry: NavBackStackEntry? = navController.currentBackStackEntryAsState().value
+            val currentRoute = navBackStackEntry?.destination?.route
+
+            Box (
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                BottomBar(navController, currentRoute)
             }
         }
     }

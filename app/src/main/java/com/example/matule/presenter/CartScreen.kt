@@ -54,16 +54,22 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.AsyncImage
 import com.example.matule.R
 import com.example.matule.common.Drawer
+import com.example.matule.common.components.BottomBar
 import com.example.matule.data.PreferencesManager
 import com.example.matule.domain.BASE_URL
 import com.example.matule.domain.view.CartViewModel
+import com.example.matule.domain.view.OrderViewModel
 import com.example.matule.domain.view.ProfileViewModel
 import com.example.matule.ui.theme.accent
 import com.example.matule.ui.theme.background
@@ -71,6 +77,7 @@ import com.example.matule.ui.theme.block
 import com.example.matule.ui.theme.hint
 import com.example.matule.ui.theme.red
 import com.example.matule.ui.theme.subtextDark
+import com.example.matule.ui.theme.text
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -81,17 +88,18 @@ fun CartScreen(
     navController: NavController,
     profileViewModel: ProfileViewModel,
     cartViewModel: CartViewModel = viewModel(),
-    newProfileViewModel: ProfileViewModel = viewModel()
+    orderViewModel: OrderViewModel = viewModel()
 ) {
     val scope = rememberCoroutineScope()
     val cart by cartViewModel.products.collectAsState()
     val context = LocalContext.current
     val preferencesManager = remember { PreferencesManager(context) }
     val interactionSource = remember { MutableInteractionSource() }
-    val profileInfo by newProfileViewModel.profile.collectAsState()
+    val profileInfo by profileViewModel.profile.collectAsState()
 
     var isMenuOpen by remember { mutableStateOf(false) }
     var isCheckOutOpen by remember { mutableStateOf(false) }
+    var successfully by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf("") }
 
     val offsetX by animateFloatAsState(if (isMenuOpen) 180f else 0f, label = "")
@@ -106,7 +114,6 @@ fun CartScreen(
 
     LaunchedEffect(Unit) {
         cartViewModel.getAllProducts(preferencesManager)
-        newProfileViewModel.getProfileInfo(preferencesManager)
     }
 
     Box(
@@ -453,7 +460,7 @@ fun CartScreen(
                                         )
                                         Spacer(Modifier.height(16.dp))
                                         profileInfo?.result?.let { prof ->
-                                            Row (
+                                            Row(
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
                                                 Text(
@@ -498,26 +505,16 @@ fun CartScreen(
                                             Spacer(Modifier.width(20.dp))
                                             Column {
                                                 Text(
-                                                    text = "Адрес",
+                                                    text = "Адрес: ",
                                                     fontSize = 18.sp
                                                 )
                                                 Text(
-                                                    text = prof.address.toString(),
-                                                    fontSize = 16.sp,
-                                                    color = subtextDark
+                                                    modifier = Modifier
+                                                        .fillMaxWidth(),
+                                                    text = if (error == "Отсутствует адрес") error else prof.address.toString(),
+                                                    fontSize = 18.sp,
+                                                    color = if (error == "Отсутствует адрес") red else subtextDark
                                                 )
-                                            }
-                                        }
-                                        Text(
-                                            text = error,
-                                            fontSize = 20.sp,
-                                            color = red
-                                        )
-                                        if (error == "Отсутствует адрес"){
-                                            Button(onClick = {
-                                                navController.navigate("ProfileScreen")
-                                            }) {
-                                                Text("Перейти в профиль")
                                             }
                                         }
                                     }
@@ -605,7 +602,13 @@ fun CartScreen(
                                         color = accent
                                     )
                                 }
-                                Spacer(Modifier.height(20.dp))
+                                Spacer(Modifier.height(10.dp))
+                                Text(
+                                    text = if (error == "user balance is insufficient") "Недостаточно средств" else if (error != "Отсутствует адрес") error else "",
+                                    fontSize = 16.sp,
+                                    color = red
+                                )
+                                Spacer(Modifier.height(10.dp))
                                 Button(
                                     modifier = Modifier.fillMaxWidth(),
                                     colors = ButtonColors(
@@ -616,11 +619,38 @@ fun CartScreen(
                                     ),
                                     shape = RoundedCornerShape(14.dp),
                                     onClick = {
-                                        if (!isCheckOutOpen){
-                                            isCheckOutOpen = true
-                                        } else {
-                                            if (profileInfo?.result?.address == null){
-                                                error = "Отсутствует адрес"
+                                        scope.launch {
+                                            if (!isCheckOutOpen) {
+                                                isCheckOutOpen = true
+                                            } else {
+                                                if (profileInfo?.result?.address == null || profileInfo?.result?.address == "") {
+                                                    error = "Отсутствует адрес"
+                                                } else {
+                                                    for (item in cartItems) {
+                                                        var err = orderViewModel.buyProduct(
+                                                            preferencesManager,
+                                                            item.id,
+                                                            item.count
+                                                        )
+                                                        if (err.error != null) {
+                                                            error =
+                                                                "Произошла ошибка при оформлении заказа: ${item.name}"
+                                                            break
+                                                        }
+                                                        err = cartViewModel.deleteFromCart(
+                                                            preferencesManager,
+                                                            item.id
+                                                        )
+                                                        if (err.error != null) {
+                                                            "Произошла ошибка при оформлении заказа: ${item.name}"
+                                                        }
+                                                    }
+                                                    if (error == "" || error == "Отсутствует адрес"){
+                                                        successfully = true
+                                                        delay(1500)
+                                                        navController.navigate("OrdersScreen")
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -635,6 +665,46 @@ fun CartScreen(
                         }
                     }
                 }
+                if (successfully){
+                    Successfully {
+                        successfully = false
+                    }
+                }
+                val navBackStackEntry: NavBackStackEntry? = navController.currentBackStackEntryAsState().value
+                val currentRoute = navBackStackEntry?.destination?.route
+            }
+        }
+    }
+}
+
+@Composable
+fun Successfully(onDismiss: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 14.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(block)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    text = "Успешно",
+                    fontSize = 24.sp,
+                    color = text
+                )
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    text = "Ваш заказ успешно оформлен",
+                    textAlign = TextAlign.Center,
+                    fontSize = 18.sp,
+                    color = subtextDark
+                )
             }
         }
     }

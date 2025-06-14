@@ -3,10 +3,9 @@ package com.example.matule.domain
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-const val BASE_URL = "https://baxvkdq63fp6.share.zrok.io"
+const val BASE_URL = "https://no-ol.tech"
 
 object RetrofitInstance {
-
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)

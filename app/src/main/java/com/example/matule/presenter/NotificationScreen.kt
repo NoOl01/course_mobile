@@ -7,15 +7,22 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -30,12 +37,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.matule.R
 import com.example.matule.common.Drawer
+import com.example.matule.common.components.BottomBar
 import com.example.matule.common.components.NotificationCard
 import com.example.matule.data.PreferencesManager
 import com.example.matule.domain.view.NotificationViewModel
@@ -46,7 +60,11 @@ import kotlin.math.abs
 
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
-fun NotificationScreen(navController: NavController, profileViewModel: ProfileViewModel, viewModel: NotificationViewModel = viewModel()){
+fun NotificationScreen(
+    navController: NavController,
+    profileViewModel: ProfileViewModel,
+    viewModel: NotificationViewModel = viewModel()
+) {
     val scope = rememberCoroutineScope()
     val result by viewModel.notification.collectAsState()
     val context = LocalContext.current
@@ -108,6 +126,31 @@ fun NotificationScreen(navController: NavController, profileViewModel: ProfileVi
                     .padding(horizontal = 6.dp)
                     .padding(top = 40.dp),
             ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(0.7f)
+                        .padding(horizontal = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    IconButton(
+                        onClick = {
+                            navController.popBackStack()
+                        },
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = block
+                        )
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.back_arrow),
+                            contentDescription = "назад"
+                        )
+                    }
+                    Text(
+                        text = "Уведомления",
+                        fontSize = 20.sp
+                    )
+                }
                 result?.result?.let { notifications ->
                     LazyColumn {
                         items(notifications) { item ->
@@ -115,6 +158,15 @@ fun NotificationScreen(navController: NavController, profileViewModel: ProfileVi
                         }
                     }
                 }
+            }
+            val navBackStackEntry: NavBackStackEntry? = navController.currentBackStackEntryAsState().value
+            val currentRoute = navBackStackEntry?.destination?.route
+
+            Box (
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                BottomBar(navController, currentRoute)
             }
         }
     }
