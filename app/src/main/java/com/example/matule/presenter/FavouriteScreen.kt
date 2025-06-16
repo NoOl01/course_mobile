@@ -1,6 +1,5 @@
 package com.example.matule.presenter
 
-import android.util.Log
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -16,7 +15,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -149,60 +150,79 @@ fun FavouriteScreen(
                     )
                 }
                 fav?.result?.let { productsList ->
-                    FlowRow(
+                    Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp)
+                            .fillMaxSize()
+                            .padding(bottom = 90.dp)
+                            .verticalScroll(rememberScrollState())
                     ) {
-                        productsList.forEach { product ->
-                            var isLiked by remember { mutableStateOf(product.is_liked)}
-                            var inCart by remember { mutableStateOf(product.in_cart)}
+                        FlowRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
+                            productsList.forEach { product ->
+                                var isLiked by remember { mutableStateOf(product.is_liked) }
+                                var inCart by remember { mutableStateOf(product.in_cart) }
 
-                            ProductCard(
-                                name = product.name,
-                                price = product.price,
-                                image = product.image,
-                                isLiked = isLiked,
-                                inCart = inCart,
-                                toCart = {
-                                    scope.launch {
-                                        if (!inCart){
-                                            val err = cartViewModel.addToCart(preferencesManager, product.id)
-                                            if (err.error == null){
-                                                inCart = true
-                                            }
-                                        } else {
-                                            navController.navigate("CartScreen")
-                                        }
-                                    }
-                                },
-                                toFavourite = {
-                                    scope.launch {
-                                        if (!isLiked){
-                                            val err = favouriteViewModel.addToFavourite(preferencesManager, product.id)
-                                            if (err.error == null){
-                                                isLiked = true
-                                            }
-                                        } else {
-                                            val err = favouriteViewModel.deleteFromFavourite(preferencesManager, product.id)
-                                            if (err.error == null){
-                                                isLiked = false
+                                ProductCard(
+                                    name = product.name,
+                                    price = product.price,
+                                    image = product.image,
+                                    isLiked = isLiked,
+                                    inCart = inCart,
+                                    toCart = {
+                                        scope.launch {
+                                            if (!inCart) {
+                                                val err = cartViewModel.addToCart(
+                                                    preferencesManager,
+                                                    product.id
+                                                )
+                                                if (err.error == null) {
+                                                    inCart = true
+                                                }
+                                            } else {
+                                                navController.navigate("CartScreen")
                                             }
                                         }
+                                    },
+                                    toFavourite = {
+                                        scope.launch {
+                                            if (!isLiked) {
+                                                val err = favouriteViewModel.addToFavourite(
+                                                    preferencesManager,
+                                                    product.id
+                                                )
+                                                if (err.error == null) {
+                                                    isLiked = true
+                                                }
+                                            } else {
+                                                val err = favouriteViewModel.deleteFromFavourite(
+                                                    preferencesManager,
+                                                    product.id
+                                                )
+                                                if (err.error == null) {
+                                                    isLiked = false
+                                                }
+                                            }
+                                        }
+                                    },
+                                    onClick = {
+                                        navController.navigate("ProductScreen/${product.id}")
                                     }
-                                },
-                                onClick = {
-                                    navController.navigate("ProductScreen/${product.id}")
-                                }
-                            )
+                                )
+                            }
                         }
                     }
                 }
             }
-            val navBackStackEntry: NavBackStackEntry? = navController.currentBackStackEntryAsState().value
+            val navBackStackEntry: NavBackStackEntry? =
+                navController.currentBackStackEntryAsState().value
             val currentRoute = navBackStackEntry?.destination?.route
 
-            Box (
+            Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.BottomCenter
             ) {

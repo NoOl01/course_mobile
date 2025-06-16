@@ -21,7 +21,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
@@ -198,7 +200,7 @@ fun MainScreen(
                             items(categoriesList) { category ->
                                 Button(
                                     modifier = Modifier
-                                        .width(140.dp)
+                                        .width(160.dp)
                                         .height(50.dp),
                                     shape = RoundedCornerShape(10.dp),
                                     colors = ButtonColors(
@@ -220,52 +222,70 @@ fun MainScreen(
                         }
                         Spacer(Modifier.height(20.dp))
                         products?.result?.let { productsList ->
-                            FlowRow(
+                            Column(
                                 modifier = Modifier
-                                    .fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                    .fillMaxSize()
+                                    .padding(bottom = 90.dp)
+                                    .verticalScroll(rememberScrollState())
                             ) {
-                                productsList.forEach { product ->
-                                    var isLiked by remember { mutableStateOf(product.is_liked)}
-                                    var inCart by remember { mutableStateOf(product.in_cart)}
+                                FlowRow(
+                                    modifier = Modifier
+                                        .fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                                ) {
+                                    productsList.forEach { product ->
+                                        var isLiked by remember { mutableStateOf(product.is_liked) }
+                                        var inCart by remember { mutableStateOf(product.in_cart) }
 
-                                    ProductCard(
-                                        name = product.name,
-                                        price = product.price,
-                                        image = product.image,
-                                        isLiked = isLiked,
-                                        inCart = inCart,
-                                        toCart = {
-                                            scope.launch {
-                                                if (!inCart){
-                                                    val err = cartViewModel.addToCart(preferencesManager, product.id)
-                                                    if (err.error == null){
-                                                        inCart = true
-                                                    }
-                                                } else {
-                                                    navController.navigate("CartScreen")
-                                                }
-                                            }
-                                        },
-                                        toFavourite = {
-                                            scope.launch {
-                                                if (!isLiked){
-                                                    val err = favouriteViewModel.addToFavourite(preferencesManager, product.id)
-                                                    if (err.error == null){
-                                                        isLiked = true
-                                                    }
-                                                } else {
-                                                    val err = favouriteViewModel.deleteFromFavourite(preferencesManager, product.id)
-                                                    if (err.error == null){
-                                                        isLiked = false
+                                        ProductCard(
+                                            name = product.name,
+                                            price = product.price,
+                                            image = product.image,
+                                            isLiked = isLiked,
+                                            inCart = inCart,
+                                            toCart = {
+                                                scope.launch {
+                                                    if (!inCart) {
+                                                        val err = cartViewModel.addToCart(
+                                                            preferencesManager,
+                                                            product.id
+                                                        )
+                                                        if (err.error == null) {
+                                                            inCart = true
+                                                        }
+                                                    } else {
+                                                        navController.navigate("CartScreen")
                                                     }
                                                 }
+                                            },
+                                            toFavourite = {
+                                                scope.launch {
+                                                    if (!isLiked) {
+                                                        val err = favouriteViewModel.addToFavourite(
+                                                            preferencesManager,
+                                                            product.id
+                                                        )
+                                                        if (err.error == null) {
+                                                            isLiked = true
+                                                        }
+                                                    } else {
+                                                        val err =
+                                                            favouriteViewModel.deleteFromFavourite(
+                                                                preferencesManager,
+                                                                product.id
+                                                            )
+                                                        if (err.error == null) {
+                                                            isLiked = false
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            onClick = {
+                                                navController.navigate("ProductScreen/${product.id}")
                                             }
-                                        },
-                                        onClick = {
-                                            navController.navigate("ProductScreen/${product.id}")
-                                        }
-                                    )
+                                        )
+                                    }
                                 }
                             }
                         }

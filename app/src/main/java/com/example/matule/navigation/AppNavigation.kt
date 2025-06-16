@@ -39,7 +39,7 @@ fun AppNavigation(
         popExitTransition = { fadeOut(animationSpec = tween(0)) }) {
         composable("MainScreen") { MainScreen(navController, profileViewModel) }
         composable("LoginScreen") { LoginScreen(navController, profileViewModel) }
-        composable("RegistrationScreen") { RegistrationScreen(navController, profileViewModel) }
+        composable("RegistrationScreen") { RegistrationScreen(navController) }
         composable("ProfileScreen") { ProfileScreen(navController, profileViewModel) }
         composable("ForgotPasswordScreen") { ForgotPasswordScreen(navController) }
         composable("NotificationScreen") { NotificationScreen(navController, profileViewModel) }

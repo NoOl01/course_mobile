@@ -59,13 +59,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.AsyncImage
 import com.example.matule.R
 import com.example.matule.common.Drawer
-import com.example.matule.common.components.BottomBar
 import com.example.matule.data.PreferencesManager
 import com.example.matule.domain.BASE_URL
 import com.example.matule.domain.view.CartViewModel
@@ -227,7 +224,9 @@ fun CartScreen(
                             }
 
                             if (!isCheckOutOpen) {
-                                LazyColumn {
+                                LazyColumn (
+                                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                                ) {
                                     items(cartItems, key = { it.id }) { c ->
                                         var count by remember { mutableIntStateOf(c.count) }
                                         var isCounterOpen by remember { mutableStateOf(false) }
@@ -645,7 +644,7 @@ fun CartScreen(
                                                             "Произошла ошибка при оформлении заказа: ${item.name}"
                                                         }
                                                     }
-                                                    if (error == "" || error == "Отсутствует адрес"){
+                                                    if (error == "" || error == "Отсутствует адрес") {
                                                         successfully = true
                                                         delay(1500)
                                                         navController.navigate("OrdersScreen")
@@ -665,13 +664,11 @@ fun CartScreen(
                         }
                     }
                 }
-                if (successfully){
+                if (successfully) {
                     Successfully {
                         successfully = false
                     }
                 }
-                val navBackStackEntry: NavBackStackEntry? = navController.currentBackStackEntryAsState().value
-                val currentRoute = navBackStackEntry?.destination?.route
             }
         }
     }

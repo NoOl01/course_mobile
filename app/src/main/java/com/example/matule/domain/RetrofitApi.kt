@@ -156,7 +156,7 @@ interface DaDataApi {
     @Headers(
         "Content-Type: application/json",
         "Accept: application/json",
-        "Authorization: Token token"
+        "Authorization: Token 641a109bf6785c69aa29c060e90baefc7568cd06"
         )
     @POST("suggestions/api/4_1/rs/suggest/address")
     suspend fun getAddresses(

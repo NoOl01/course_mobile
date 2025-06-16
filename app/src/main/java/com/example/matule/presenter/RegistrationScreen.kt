@@ -13,7 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -36,7 +35,6 @@ import com.example.matule.common.components.CustomTextField
 import com.example.matule.common.components.CustomTextFieldWithPassword
 import com.example.matule.data.PreferencesManager
 import com.example.matule.domain.view.AuthViewModel
-import com.example.matule.domain.view.ProfileViewModel
 import com.example.matule.ui.theme.accent
 import com.example.matule.ui.theme.block
 import com.example.matule.ui.theme.disable
@@ -47,7 +45,7 @@ import com.example.matule.ui.theme.text
 import kotlinx.coroutines.launch
 
 @Composable
-fun RegistrationScreen(navController: NavController, profileViewModel: ProfileViewModel, viewModel: AuthViewModel = viewModel()) {
+fun RegistrationScreen(navController: NavController, viewModel: AuthViewModel = viewModel()) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -173,8 +171,7 @@ fun RegistrationScreen(navController: NavController, profileViewModel: ProfileVi
                                 }
                                 errorText = "Произошла ошибка"
                             } else {
-                                profileViewModel.getProfileInfo(preferencesManager)
-                                navController.navigate("MainScreen") {
+                                navController.navigate("LoginScreen") {
                                     popUpTo(navController.graph.startDestinationId) {
                                         inclusive = true
                                     }
