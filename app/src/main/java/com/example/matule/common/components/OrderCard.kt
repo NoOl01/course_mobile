@@ -84,19 +84,22 @@ fun OrderCard(
                             text = order.product.name,
                             fontSize = 26.sp
                         )
-                        Text(
-                            text = "₽${order.price}",
-                            fontSize = 22.sp
-                        )
+                        Row (
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+
+                        ) {
+                            Text(
+                                text = "₽${order.price}",
+                                fontSize = 22.sp
+                            )
+                            Text(
+                                text = formatOrderTime(order.time),
+                                fontSize = 16.sp
+                            )
+                        }
                     }
-                }
-                Column (
-                    modifier = Modifier.fillMaxHeight().padding(vertical = 10.dp),
-                    verticalArrangement = Arrangement.Bottom
-                ) {
-                    Text(
-                        text = formatOrderTime(order.time)
-                    )
                 }
             }
         }
